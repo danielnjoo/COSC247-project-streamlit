@@ -1,38 +1,58 @@
-from collections import namedtuple
-import altair as alt
-import math
 import pandas as pd
+import numpy as np
 import streamlit as st
+from streamlit import components
+import xgboost as xgb
+import eli5
+import pickle
 
 """
-# Welcome to Streamlit!
+# COSC247 Project - Interactive
+### Daniel Njoo
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+This is an app to accompany my Final Project, "(Machine) Learning to Detect Fake News," that allows users to explore the fully-trained XGBoost model's predictions, with regards to which words are most influential in making its predictions
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+A sample of articles, one from each source (n=66) is shown below:
+"""
 
-In the meantime, below is an example of what you can do with just a few lines of code:
+sample = pd.read_csv("sample.csv")
+st.dataframe(sample[["source", "name", "content"]])
+
+"""
+## Selected article
+
+Select an article in the sidebar on the left, and move the slider to show more of the article's text below:
+"""
+
+options = ("(" + sample["source"] + ") " + sample['name']).tolist()
+content = sample['content'].tolist()
+dic = dict(zip(content, options))
+
+selected = st.sidebar.selectbox('Choose an article:', content, format_func=lambda x: dic[x])
+st.write(sample.loc[sample["content"]==selected])
+
+nchar = st.sidebar.slider("Number of characters to show:", min_value=0, max_value=len(selected), value=250)
+st.write(selected[:nchar])
+
+"""
+## Model prediction
+"""
+
+Tfidf_vect_full = pickle.load(open("Tfidf_full.pickle.dat", "rb"))
+xg = pickle.load(open("xgboost.pkl", "rb"))
+xg.feature_names = Tfidf_vect_full.get_feature_names()
+
+transformed_text = Tfidf_vect_full.transform([selected])
+pred = xg.predict(transformed_text)
+st.text("The model predicts " + np.array_str(pred) + " when the true label was " + sample.loc[sample["content"]==selected]["label"].to_string(index=False))
+
+"""
+## Prediction explanation
+
+Using the eli5 package, the XGBoost model's prediction choice can be explained below by the following features, representing words in the Tf-Idf vectorizer (20,000 features only) that also appear in the text.
 """
 
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
-
-    Point = namedtuple('Point', 'x y')
-    data = []
-
-    points_per_turn = total_points / num_turns
-
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
-
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+no_missing = lambda feature_name, feature_value: not np.isnan(feature_value)
+raw_html = eli5.show_prediction(xg, selected, vec=Tfidf_vect_full, show_feature_values=True, feature_filter=no_missing)._repr_html_()
+components.v1.html(raw_html, height=500, scrolling=True)

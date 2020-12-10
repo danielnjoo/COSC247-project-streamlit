@@ -1,6 +1,4 @@
-# Welcome to Streamlit!
+## COSC247 Project - Interactive
+### Machine Learning w/ Prof Spector Fall 2020
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+This is an app to accompany my Final Project, "(Machine) Learning to Detect Fake News," that allows users to explore the fully-trained XGBoost model's predictions, with regards to which words are most influential in making its predictions
