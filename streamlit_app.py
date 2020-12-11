@@ -10,7 +10,9 @@ import pickle
 # COSC247 Project - Interactive
 ### Daniel Njoo
 
-This is an app to accompany my Final Project, "(Machine) Learning to Detect Fake News," that allows users to explore the fully-trained XGBoost model's predictions, with regards to which words are most influential in making its predictions
+This is an app to accompany my Final Project, "(Machine) Learning to Detect Fake News," that allows users to explore the fully-trained XGBoost model's predictions, with regards to which words are most influential in making its predictions.
+
+The project code can be found at https://github.com/danielnjoo/COSC247-project-streamlit.
 
 A sample of articles, one from each source (n=66) is shown below:
 """
@@ -23,7 +25,7 @@ st.write("________________________________________________")
 
 Recall that in this case, label=1 refers to a trustworthy source while label=2 refers to an untrustworthy source (interpreted here as "fake news") as scored by NewsGuard.
 
-Select an article in the sidebar on the left, and move the slider to show more of the article's text below:
+Select an article in the sidebar on the left: and move the slider to show more of the article's text below:
 """
 
 options = ("(" + sample["source"] + ") " + sample['name']).tolist()
